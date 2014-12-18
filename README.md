@@ -1,4 +1,4 @@
 e4x
 ===
 
-Eclipse e4 eXplorer
+e4x Commander
