@@ -11,13 +11,34 @@
  *******************************************************************************/
 package e4x.parts;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.model.application.ui.MDirtyable;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.nebula.widgets.nattable.NatTable;
+import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
+import org.eclipse.nebula.widgets.nattable.data.ListDataProvider;
+import org.eclipse.nebula.widgets.nattable.data.ReflectiveColumnPropertyAccessor;
+import org.eclipse.nebula.widgets.nattable.grid.data.DefaultColumnHeaderDataProvider;
+import org.eclipse.nebula.widgets.nattable.grid.data.DefaultCornerDataProvider;
+import org.eclipse.nebula.widgets.nattable.grid.data.DefaultRowHeaderDataProvider;
+import org.eclipse.nebula.widgets.nattable.grid.layer.ColumnHeaderLayer;
+import org.eclipse.nebula.widgets.nattable.grid.layer.CornerLayer;
+import org.eclipse.nebula.widgets.nattable.grid.layer.GridLayer;
+import org.eclipse.nebula.widgets.nattable.grid.layer.RowHeaderLayer;
+import org.eclipse.nebula.widgets.nattable.hideshow.ColumnHideShowLayer;
+import org.eclipse.nebula.widgets.nattable.layer.AbstractLayerTransform;
+import org.eclipse.nebula.widgets.nattable.layer.DataLayer;
+import org.eclipse.nebula.widgets.nattable.reorder.ColumnReorderLayer;
+import org.eclipse.nebula.widgets.nattable.selection.SelectionLayer;
+import org.eclipse.nebula.widgets.nattable.viewport.ViewportLayer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -29,10 +50,75 @@ import org.eclipse.swt.widgets.Text;
 public class SamplePart {
 
 	private Text txtInput;
-	private TableViewer tableViewer;
+	private NatTable natTable;
 
 	@Inject
 	private MDirtyable dirty;
+
+	public class Data {
+
+		protected String name;
+		protected int id;
+
+		public Data(String name, int id) {
+			super();
+			this.name = name;
+			this.id = id;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public int getId() {
+			return id;
+		}
+
+		public void setId(int id) {
+			this.id = id;
+		}
+		
+	}
+
+	public class BodyLayerStack extends AbstractLayerTransform {
+
+		private SelectionLayer selectionLayer;
+
+		public BodyLayerStack(IDataProvider dataProvider) {
+			DataLayer bodyDataLayer = new DataLayer(dataProvider);
+			ColumnReorderLayer columnReorderLayer = new ColumnReorderLayer(bodyDataLayer);
+			ColumnHideShowLayer columnHideShowLayer = new ColumnHideShowLayer(columnReorderLayer);
+			selectionLayer = new SelectionLayer(columnHideShowLayer);
+			ViewportLayer viewportLayer = new ViewportLayer(selectionLayer);
+			setUnderlyingLayer(viewportLayer);
+		}
+
+		public SelectionLayer getSelectionLayer() {
+			return selectionLayer;
+		}
+	}
+
+	public class ColumnHeaderLayerStack extends AbstractLayerTransform {
+
+		public ColumnHeaderLayerStack(IDataProvider dataProvider, BodyLayerStack bodyLayer) {
+			DataLayer dataLayer = new DataLayer(dataProvider);
+			ColumnHeaderLayer colHeaderLayer = new ColumnHeaderLayer(dataLayer, bodyLayer, bodyLayer.getSelectionLayer());
+			setUnderlyingLayer(colHeaderLayer);
+		}
+	}
+
+	public class RowHeaderLayerStack extends AbstractLayerTransform {
+
+		public RowHeaderLayerStack(IDataProvider dataProvider, BodyLayerStack bodyLayer) {
+			DataLayer dataLayer = new DataLayer(dataProvider, 50, 20);
+			RowHeaderLayer rowHeaderLayer = new RowHeaderLayer(dataLayer, bodyLayer, bodyLayer.getSelectionLayer());
+			setUnderlyingLayer(rowHeaderLayer);
+		}
+	}
 
 	@PostConstruct
 	public void createComposite(Composite parent) {
@@ -48,19 +134,35 @@ public class SamplePart {
 		});
 		txtInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		tableViewer = new TableViewer(parent);
+		String[] propertyNames = new String[] { "id", "name" };
+		
+		Map<String, String> propertyToLabels = new HashMap<String,String>();
+		propertyToLabels.put("name", "NAME");
+		propertyToLabels.put("id", "ID");
 
-		tableViewer.add("Sample item 1");
-		tableViewer.add("Sample item 2");
-		tableViewer.add("Sample item 3");
-		tableViewer.add("Sample item 4");
-		tableViewer.add("Sample item 5");
-		tableViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+		List<Data> list = new ArrayList<Data>();
+		list.add(new Data("Peter", 1));
+		list.add(new Data("Paul", 2));
+		list.add(new Data("Mary", 3));
+
+		ListDataProvider<Data> contentProvider = new ListDataProvider<Data>(list, new ReflectiveColumnPropertyAccessor<Data>(propertyNames));
+		DefaultColumnHeaderDataProvider colHeaderDataProvider = new DefaultColumnHeaderDataProvider(propertyNames, propertyToLabels);
+		DefaultRowHeaderDataProvider rowHeaderDataProvider = new DefaultRowHeaderDataProvider(contentProvider);
+		DefaultCornerDataProvider cornerDataProvider = new DefaultCornerDataProvider(colHeaderDataProvider, rowHeaderDataProvider);
+		
+		BodyLayerStack bodyLayer = new BodyLayerStack(contentProvider);
+		ColumnHeaderLayerStack columnHeaderLayer = new ColumnHeaderLayerStack(colHeaderDataProvider, bodyLayer);
+		RowHeaderLayerStack rowHeaderLayer = new RowHeaderLayerStack(rowHeaderDataProvider, bodyLayer);
+		CornerLayer cornerLayer = new CornerLayer(new DataLayer(cornerDataProvider), rowHeaderLayer, columnHeaderLayer);
+
+		GridLayer gridLayer = new GridLayer(bodyLayer, columnHeaderLayer, rowHeaderLayer, cornerLayer);
+		natTable = new NatTable(parent, gridLayer);
+		natTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 	}
 
 	@Focus
 	public void setFocus() {
-		tableViewer.getTable().setFocus();
+		natTable.setFocus();
 	}
 
 	@Persist
