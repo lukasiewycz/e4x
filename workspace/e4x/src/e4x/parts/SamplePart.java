@@ -45,6 +45,9 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 public class SamplePart {
@@ -141,9 +144,9 @@ public class SamplePart {
 		propertyToLabels.put("id", "ID");
 
 		List<Data> list = new ArrayList<Data>();
-		list.add(new Data("Peter", 1));
-		list.add(new Data("Paul", 2));
-		list.add(new Data("Mary", 3));
+		for(int i=0; i<10000;i++){
+			list.add(new Data("P"+i, i));
+		}
 
 		ListDataProvider<Data> contentProvider = new ListDataProvider<Data>(list, new ReflectiveColumnPropertyAccessor<Data>(propertyNames));
 		DefaultColumnHeaderDataProvider colHeaderDataProvider = new DefaultColumnHeaderDataProvider(propertyNames, propertyToLabels);
@@ -156,13 +159,37 @@ public class SamplePart {
 		CornerLayer cornerLayer = new CornerLayer(new DataLayer(cornerDataProvider), rowHeaderLayer, columnHeaderLayer);
 
 		GridLayer gridLayer = new GridLayer(bodyLayer, columnHeaderLayer, rowHeaderLayer, cornerLayer);
-		natTable = new NatTable(parent, gridLayer);
-		natTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
+		/*natTable = new NatTable(parent, gridLayer);
+		natTable.setLayoutData(new GridData(GridData.FILL_BOTH));*/
+		
+		
+		Table t = new Table(parent, SWT.BORDER);
+		t.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+	    TableColumn tc1 = new TableColumn(t, SWT.CENTER);
+	    TableColumn tc2 = new TableColumn(t, SWT.CENTER);
+	    TableColumn tc3 = new TableColumn(t, SWT.CENTER);
+	    tc1.setText("First Name");
+	    tc2.setText("Last Name");
+	    tc3.setText("Address");
+	    tc1.setWidth(70);
+	    tc2.setWidth(70);
+	    tc3.setWidth(80);
+	    t.setHeaderVisible(true);
+
+	    for(int i=0;i<10000;i++){
+	    	TableItem item1 = new TableItem(t, SWT.NONE);
+		    item1.setText(new String[] { "Tim", "Hatton", "Kentucky+"+i });
+	    }
+	    
+	    
+		
 	}
 
 	@Focus
 	public void setFocus() {
-		natTable.setFocus();
+		//natTable.setFocus();
 	}
 
 	@Persist
