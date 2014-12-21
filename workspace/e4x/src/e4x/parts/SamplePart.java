@@ -41,6 +41,7 @@ import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.swt.DefaultEventTableViewer;
+import ca.odell.glazedlists.swt.GlazedListsSWT;
 import ca.odell.glazedlists.swt.TableColumnConfigurer;
 import ca.odell.glazedlists.swt.TableComparatorChooser;
 import ca.odell.glazedlists.swt.TableItemConfigurer;
@@ -87,7 +88,6 @@ public class SamplePart {
 					return "size";
 				}
 			}
-			
 
 			@Override
 			public void configure(TableColumn tableColumn, int col) {
@@ -161,18 +161,17 @@ public class SamplePart {
 		Table table = new Table(parent, SWT.NONE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION | SWT.SINGLE);
 		table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-
-
-		DefaultEventTableViewer<AdvancedFile> tableViewer = new DefaultEventTableViewer<AdvancedFile>(sortedList, table, new PathTableFormat());
-		tableViewer.setTableItemConfigurer(new TableItemConfigurer<AdvancedFile>(){
+		DefaultEventTableViewer<AdvancedFile> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(sortedList, table, new PathTableFormat());
+		tableViewer.setTableItemConfigurer(new TableItemConfigurer<AdvancedFile>() {
 			@Override
 			public void configure(TableItem tableItem, AdvancedFile item, Object obj, int row, int column) {
 				tableItem.setText(column, obj.toString());
-				//tableItem.setForeground(0, Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				// tableItem.setForeground(0,
+				// Display.getCurrent().getSystemColor(SWT.COLOR_RED));
 				tableItem.setImage(0, item.getIcon());
 			}
 		});
-				
+
 		TableComparatorChooser.install(tableViewer, sortedList, false);
 
 		table.setHeaderVisible(true);
@@ -184,11 +183,7 @@ public class SamplePart {
 			public void run() {
 				try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory, filter)) {
 					for (Path path : directoryStream) {
-						Display.getDefault().asyncExec(new Runnable() {
-							public void run() {
-								transformedList.add(new AdvancedPath(path));
-							}
-						});
+						transformedList.add(new AdvancedPath(path));
 						Thread.sleep(100);
 					}
 				} catch (IOException ex) {
