@@ -39,12 +39,7 @@ public class AdvancedPath implements AdvancedFile {
 	}
 	
 
-	public static int BASE = 0;
-	public static int EXTENSION = 1;
 
-	private String[] getFilename(Path path) {
-		return ("" + path.getFileName()).split("\\.(?=[^\\.]+$)");
-	}
 
 	@Override
 	public Image getIcon() {
