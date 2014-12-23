@@ -1,13 +1,11 @@
 package e4x.browser.columns;
 
-import java.util.Comparator;
-
 import org.eclipse.swt.graphics.Image;
 
 import e4x.browser.cells.CellData;
 import e4x.browser.model.AdvancedFile;
 
-public class FilesizeColumn implements BrowserColumn<Long> {
+public class FilesizeColumn extends AbstractBrowserColumn<Long> {
 
 	@Override
 	public CellData<Long> getCell(AdvancedFile file) {
@@ -45,16 +43,10 @@ public class FilesizeColumn implements BrowserColumn<Long> {
 	}
 
 	@Override
-	public Comparator<CellData<Long>> getComparator() {
-		return new Comparator<CellData<Long>>() {
-			@Override
-			public int compare(CellData<Long> o1, CellData<Long> o2) {
-				Long l1 = o1.getContent();
-				Long l2 = o2.getContent();
-				return l1.compareTo(l2);
-			}
-
-		};
+	public int compare(CellData<Long> c1, CellData<Long> c2) {
+		Long l1 = c1.getContent();
+		Long l2 = c2.getContent();
+		return l1.compareTo(l2);
 	}
 
 

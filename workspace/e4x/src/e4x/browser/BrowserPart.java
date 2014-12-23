@@ -12,6 +12,7 @@
 package e4x.browser;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,19 +40,23 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.TransformedList;
+import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
+import ca.odell.glazedlists.impl.gui.SortingState;
 import ca.odell.glazedlists.swt.DefaultEventTableViewer;
 import ca.odell.glazedlists.swt.GlazedListsSWT;
 import ca.odell.glazedlists.swt.TableColumnConfigurer;
-import ca.odell.glazedlists.swt.TableComparatorChooser;
 import ca.odell.glazedlists.swt.TableItemConfigurer;
 import e4x.browser.cells.CellData;
+import e4x.browser.columns.AdvancedFileTypeComparator;
 import e4x.browser.columns.BasenameColumn;
 import e4x.browser.columns.BrowserColumn;
+import e4x.browser.columns.CustomTableComparatorChooser;
 import e4x.browser.columns.ExtensionColumn;
 import e4x.browser.columns.FilesizeColumn;
 import e4x.browser.model.AdvancedFile;
 import e4x.browser.model.AdvancedPath;
+import e4x.browser.model.ParentPath;
 
 public class BrowserPart {
 
@@ -73,8 +78,9 @@ public class BrowserPart {
 				return !Files.isHidden(path) && Files.isReadable(path);
 			}
 		};
-		
+
 		List<BrowserColumn<?>> columnList = new ArrayList<BrowserColumn<?>>();
+		//columnList.add(new TypeColumn());
 		columnList.add(new BasenameColumn());
 		columnList.add(new ExtensionColumn());
 		columnList.add(new FilesizeColumn());
@@ -82,7 +88,9 @@ public class BrowserPart {
 		List<AdvancedFile> rootList = new ArrayList<AdvancedFile>();
 
 		EventList<AdvancedFile> eventList = GlazedLists.eventList(rootList);
-		SortedList<AdvancedFile> sortedList = new SortedList<AdvancedFile>(eventList, null);
+		
+		
+		SortedList<AdvancedFile> sortedList = new SortedList<AdvancedFile>(eventList, GlazedLists.chainComparators(new AdvancedFileTypeComparator()));
 
 		class PathTableFormat implements AdvancedTableFormat<AdvancedFile>, TableColumnConfigurer {
 			@Override
@@ -125,19 +133,22 @@ public class BrowserPart {
 		tableViewer.setTableItemConfigurer(new TableItemConfigurer<AdvancedFile>() {
 			@Override
 			public void configure(TableItem tableItem, AdvancedFile item, Object obj, int row, int column) {
-				CellData<?> cellData = (CellData<?>)obj;
+				CellData<?> cellData = (CellData<?>) obj;
 				tableItem.setText(column, cellData.getText());
 				Image icon = cellData.getIcon();
-				if(icon != null){
+				if (icon != null) {
 					tableItem.setImage(column, icon);
 				}
 				// tableItem.setForeground(0,
 				// Display.getCurrent().getSystemColor(SWT.COLOR_RED));
 			}
 		});
+		
+		
+		
 
-		TableComparatorChooser.install(tableViewer, sortedList, false);
-
+		CustomTableComparatorChooser<AdvancedFile> tcc = new CustomTableComparatorChooser<AdvancedFile>(tableViewer, sortedList, false);
+		
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 
@@ -145,6 +156,7 @@ public class BrowserPart {
 
 		Thread t = new Thread() {
 			public void run() {
+				transformedList.add(new ParentPath());
 				try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory, filter)) {
 					for (Path path : directoryStream) {
 						transformedList.add(new AdvancedPath(path));
@@ -158,9 +170,8 @@ public class BrowserPart {
 			}
 		};
 		t.start();
-
 	}
-
+	
 	@Focus
 	public void setFocus() {
 

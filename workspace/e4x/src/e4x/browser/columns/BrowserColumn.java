@@ -15,4 +15,6 @@ public interface BrowserColumn<T> {
 	
 	public int getWidth();
 	
+	public int compare(CellData<T> c1, CellData<T> c2);
+	
 }
