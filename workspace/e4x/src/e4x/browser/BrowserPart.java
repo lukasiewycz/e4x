@@ -12,7 +12,6 @@
 package e4x.browser;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,18 +39,18 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.TransformedList;
-import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
-import ca.odell.glazedlists.impl.gui.SortingState;
 import ca.odell.glazedlists.swt.DefaultEventTableViewer;
 import ca.odell.glazedlists.swt.GlazedListsSWT;
 import ca.odell.glazedlists.swt.TableColumnConfigurer;
+import ca.odell.glazedlists.swt.TableComparatorChooser;
 import ca.odell.glazedlists.swt.TableItemConfigurer;
 import e4x.browser.cells.CellData;
+import e4x.browser.cells.CustomTableItemConfigurer;
 import e4x.browser.columns.AdvancedFileTypeComparator;
 import e4x.browser.columns.BasenameColumn;
 import e4x.browser.columns.BrowserColumn;
-import e4x.browser.columns.CustomTableComparatorChooser;
+import e4x.browser.columns.ColumnTableFormat;
 import e4x.browser.columns.ExtensionColumn;
 import e4x.browser.columns.FilesizeColumn;
 import e4x.browser.model.AdvancedFile;
@@ -80,75 +79,26 @@ public class BrowserPart {
 		};
 
 		List<BrowserColumn<?>> columnList = new ArrayList<BrowserColumn<?>>();
-		//columnList.add(new TypeColumn());
+		// columnList.add(new TypeColumn());
 		columnList.add(new BasenameColumn());
 		columnList.add(new ExtensionColumn());
 		columnList.add(new FilesizeColumn());
 
 		List<AdvancedFile> rootList = new ArrayList<AdvancedFile>();
-
 		EventList<AdvancedFile> eventList = GlazedLists.eventList(rootList);
-		
-		
 		SortedList<AdvancedFile> sortedList = new SortedList<AdvancedFile>(eventList, GlazedLists.chainComparators(new AdvancedFileTypeComparator()));
-
-		class PathTableFormat implements AdvancedTableFormat<AdvancedFile>, TableColumnConfigurer {
-			@Override
-			public int getColumnCount() {
-				return columnList.size();
-			}
-
-			@Override
-			public String getColumnName(int col) {
-				return columnList.get(col).getName();
-			}
-
-			@Override
-			public void configure(TableColumn tableColumn, int col) {
-				tableColumn.setWidth(columnList.get(col).getWidth());
-				tableColumn.setMoveable(true);
-			}
-
-			@Override
-			public Object getColumnValue(AdvancedFile file, int col) {
-				return columnList.get(col).getCell(file);
-			}
-
-			@Override
-			public Class<?> getColumnClass(int col) {
-				return CellData.class;
-			}
-
-			@Override
-			public Comparator<?> getColumnComparator(int col) {
-				return columnList.get(col).getComparator();
-			}
-
-		}
 
 		Table table = new Table(parent, SWT.NONE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION | SWT.SINGLE);
 		table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		DefaultEventTableViewer<AdvancedFile> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(sortedList, table, new PathTableFormat());
-		tableViewer.setTableItemConfigurer(new TableItemConfigurer<AdvancedFile>() {
-			@Override
-			public void configure(TableItem tableItem, AdvancedFile item, Object obj, int row, int column) {
-				CellData<?> cellData = (CellData<?>) obj;
-				tableItem.setText(column, cellData.getText());
-				Image icon = cellData.getIcon();
-				if (icon != null) {
-					tableItem.setImage(column, icon);
-				}
-				// tableItem.setForeground(0,
-				// Display.getCurrent().getSystemColor(SWT.COLOR_RED));
-			}
-		});
-		
-		
-		
+		SortedList<AdvancedFile> groupingList = new SortedList<AdvancedFile>(sortedList, new AdvancedFileTypeComparator());
 
-		CustomTableComparatorChooser<AdvancedFile> tcc = new CustomTableComparatorChooser<AdvancedFile>(tableViewer, sortedList, false);
-		
+		DefaultEventTableViewer<AdvancedFile> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(groupingList, table, new ColumnTableFormat(
+				columnList));
+		tableViewer.setTableItemConfigurer(new CustomTableItemConfigurer());
+
+		TableComparatorChooser<AdvancedFile> tcc = TableComparatorChooser.install(tableViewer, sortedList, false);
+
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 
@@ -171,7 +121,7 @@ public class BrowserPart {
 		};
 		t.start();
 	}
-	
+
 	@Focus
 	public void setFocus() {
 

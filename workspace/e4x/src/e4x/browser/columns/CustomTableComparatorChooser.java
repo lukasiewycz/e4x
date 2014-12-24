@@ -21,6 +21,7 @@ import ca.odell.glazedlists.impl.gui.SortingStrategy;
 import ca.odell.glazedlists.swt.DefaultEventTableViewer;
 import ca.odell.glazedlists.swt.TableComparatorChooser;
 
+@Deprecated
 public class CustomTableComparatorChooser<E> extends AbstractTableComparatorChooser<E> {
 
     private final SortingStrategy sortingStrategy;
