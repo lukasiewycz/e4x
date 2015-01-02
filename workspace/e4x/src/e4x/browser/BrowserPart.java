@@ -103,6 +103,18 @@ public class BrowserPart {
 		PathListManager pathListManager = new PathListManager();
 		pathListManager.init(observableList, new PathElement(directory));
 		pathListManager.connect();
+		
+		/*Thread t = new Thread(){
+			public void run(){
+				try {
+					Thread.sleep(50000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				pathListManager.disconnect();
+			}
+		};
+		t.start();*/
 	}
 
 	@Focus

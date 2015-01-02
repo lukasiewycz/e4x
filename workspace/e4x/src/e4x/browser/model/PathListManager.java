@@ -57,10 +57,10 @@ public class PathListManager implements ListManager<PathElement> {
 
 			try {
 				final WatchService watcher = dir.getFileSystem().newWatchService();
-				final WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+				dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 
-				Map<Path,PathElement> map = new HashMap<Path,PathElement>();
-				
+				Map<Path, PathElement> map = new HashMap<Path, PathElement>();
+
 				thread = new Thread() {
 					public void run() {
 						list.clear();
@@ -78,34 +78,50 @@ public class PathListManager implements ListManager<PathElement> {
 							}
 						} catch (IOException ex) {
 						} catch (InterruptedException e) {
-							e.printStackTrace();
 						}
 
-						while (isConnected) {
-							for (WatchEvent<?> e : key.pollEvents()) {
-								Path path = dir.resolve((Path)e.context());
+						try {
+							
+
+							while (isConnected) {
+								WatchKey key = watcher.take();
 								
-								PathElement pathElement = new PathElement(dir.resolve((Path)e.context()));
-								
-								if (e.kind() == ENTRY_CREATE) {
-									list.getReadWriteLock().writeLock().lock();
-									list.add(create(path, map));
-									list.getReadWriteLock().writeLock().unlock();
-								}
-								if (e.kind() == ENTRY_DELETE) {
-									list.getReadWriteLock().writeLock().lock();
-									list.remove(create(path, map));
-									list.getReadWriteLock().writeLock().unlock();
-								}
-								if (e.kind() == ENTRY_MODIFY) {
-									if(map.containsKey(path)){
-										list.getReadWriteLock().writeLock().lock();
-										map.get(path).fireModify();
-										list.getReadWriteLock().writeLock().unlock();
+								for (WatchEvent<?> e : key.pollEvents()) {
+									Path path = dir.resolve((Path) e.context());
+
+									if (e.kind() == ENTRY_CREATE) {
+										if (!map.containsKey(path)) {
+											list.getReadWriteLock().writeLock().lock();
+											list.add(create(path, map));
+											list.getReadWriteLock().writeLock().unlock();
+										}
+									}
+									if (e.kind() == ENTRY_DELETE) {
+										if (map.containsKey(path)) {
+											list.getReadWriteLock().writeLock().lock();
+											list.remove(create(path, map));
+											list.getReadWriteLock().writeLock().unlock();
+											map.remove(path);
+										}
+									}
+									if (e.kind() == ENTRY_MODIFY) {
+										if (map.containsKey(path)) {
+											list.getReadWriteLock().writeLock().lock();
+											map.get(path).fireModify();
+											list.getReadWriteLock().writeLock().unlock();
+										}
 									}
 								}
+								
+								boolean valid = key.reset();
+							    if (!valid) {
+							        break;
+							    }
 							}
+
+						} catch (InterruptedException e1) {
 						}
+
 					}
 				};
 				thread.start();
@@ -116,9 +132,9 @@ public class PathListManager implements ListManager<PathElement> {
 
 		}
 	}
-	
-	private PathElement create(Path path, Map<Path,PathElement> map){
-		if(map.containsKey(path)){
+
+	private PathElement create(Path path, Map<Path, PathElement> map) {
+		if (map.containsKey(path)) {
 			return map.get(path);
 		} else {
 			PathElement pathElement = new PathElement(path);
@@ -133,6 +149,7 @@ public class PathListManager implements ListManager<PathElement> {
 			isConnected = false;
 
 			try {
+				thread.interrupt();
 				thread.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
