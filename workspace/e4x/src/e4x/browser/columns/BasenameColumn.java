@@ -3,12 +3,12 @@ package e4x.browser.columns;
 import org.eclipse.swt.graphics.Image;
 
 import e4x.browser.cells.CellData;
-import e4x.browser.model.FileElement;
+import e4x.browser.model.Element;
 
 public class BasenameColumn extends AbstractBrowserColumn<String> {
 
 	@Override
-	public CellData<String> getCell(FileElement file) {
+	public CellData<String> getCell(Element file) {
 		return new CellData<String>(){
 			@Override
 			public String getContent() {
@@ -30,7 +30,7 @@ public class BasenameColumn extends AbstractBrowserColumn<String> {
 			}
 
 			@Override
-			public FileElement getFile() {
+			public Element getFile() {
 				return file;
 			}
 		};

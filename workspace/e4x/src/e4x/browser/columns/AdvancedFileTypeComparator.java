@@ -2,12 +2,12 @@ package e4x.browser.columns;
 
 import java.util.Comparator;
 
-import e4x.browser.model.FileElement;
+import e4x.browser.model.Element;
 import e4x.browser.model.ParentElement;
 
-public class AdvancedFileTypeComparator implements Comparator<FileElement> {
+public class AdvancedFileTypeComparator implements Comparator<Element> {
 	
-	private int getValue(FileElement file){
+	private int getValue(Element file){
 		if(file instanceof ParentElement){
 			return 0;
 		} else if(file.isDirectory()){
@@ -19,7 +19,7 @@ public class AdvancedFileTypeComparator implements Comparator<FileElement> {
 	
 	
 	@Override
-	public int compare(FileElement o1, FileElement o2) {
+	public int compare(Element o1, Element o2) {
 		return getValue(o1) - getValue(o2);
 	}
 

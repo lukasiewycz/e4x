@@ -8,9 +8,9 @@ import org.eclipse.swt.widgets.TableColumn;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.swt.TableColumnConfigurer;
 import e4x.browser.cells.CellData;
-import e4x.browser.model.FileElement;
+import e4x.browser.model.Element;
 
-public class ColumnTableFormat implements AdvancedTableFormat<FileElement>, TableColumnConfigurer {
+public class ColumnTableFormat implements AdvancedTableFormat<Element>, TableColumnConfigurer {
 	
 	protected final List<BrowserColumn<?>> columnList;
 
@@ -36,7 +36,7 @@ public class ColumnTableFormat implements AdvancedTableFormat<FileElement>, Tabl
 	}
 
 	@Override
-	public Object getColumnValue(FileElement file, int col) {
+	public Object getColumnValue(Element file, int col) {
 		return columnList.get(col).getCell(file);
 	}
 

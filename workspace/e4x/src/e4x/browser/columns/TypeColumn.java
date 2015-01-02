@@ -3,13 +3,13 @@ package e4x.browser.columns;
 import org.eclipse.swt.graphics.Image;
 
 import e4x.browser.cells.CellData;
-import e4x.browser.model.FileElement;
+import e4x.browser.model.Element;
 import e4x.browser.model.ParentElement;
 
 public class TypeColumn extends AbstractBrowserColumn<Integer> {
 
 	@Override
-	public CellData<Integer> getCell(FileElement file) {
+	public CellData<Integer> getCell(Element file) {
 		return new CellData<Integer>(){
 			@Override
 			public Integer getContent() {
@@ -27,7 +27,7 @@ public class TypeColumn extends AbstractBrowserColumn<Integer> {
 			}
 
 			@Override
-			public FileElement getFile() {
+			public Element getFile() {
 				return file;
 			}
 		};
@@ -43,7 +43,7 @@ public class TypeColumn extends AbstractBrowserColumn<Integer> {
 		return 100;
 	}
 	
-	protected Integer getValue(FileElement file){
+	protected Integer getValue(Element file){
 		if(file instanceof ParentElement){
 			return 0;
 		} else if(file.isDirectory()){

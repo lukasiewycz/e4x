@@ -4,12 +4,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.TableItem;
 
 import ca.odell.glazedlists.swt.TableItemConfigurer;
-import e4x.browser.model.FileElement;
+import e4x.browser.model.Element;
 
-public class CustomTableItemConfigurer implements TableItemConfigurer<FileElement> {
+public class CustomTableItemConfigurer implements TableItemConfigurer<Element> {
 	
 	@Override
-	public void configure(TableItem tableItem, FileElement item, Object obj, int row, int column) {
+	public void configure(TableItem tableItem, Element item, Object obj, int row, int column) {
 		CellData<?> cellData = (CellData<?>) obj;
 		tableItem.setText(column, cellData.getText());
 		Image icon = cellData.getIcon();

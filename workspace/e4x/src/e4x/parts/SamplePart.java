@@ -45,7 +45,7 @@ import ca.odell.glazedlists.swt.GlazedListsSWT;
 import ca.odell.glazedlists.swt.TableColumnConfigurer;
 import ca.odell.glazedlists.swt.TableComparatorChooser;
 import ca.odell.glazedlists.swt.TableItemConfigurer;
-import e4x.browser.model.FileElement;
+import e4x.browser.model.Element;
 import e4x.browser.model.PathElement;
 
 public class SamplePart {
@@ -69,12 +69,12 @@ public class SamplePart {
 			}
 		};
 
-		List<FileElement> rootList = new ArrayList<FileElement>();
+		List<Element> rootList = new ArrayList<Element>();
 
-		EventList<FileElement> eventList = GlazedLists.eventList(rootList);
-		SortedList<FileElement> sortedList = new SortedList<FileElement>(eventList, null);
+		EventList<Element> eventList = GlazedLists.eventList(rootList);
+		SortedList<Element> sortedList = new SortedList<Element>(eventList, null);
 
-		class PathTableFormat implements AdvancedTableFormat<FileElement>, TableColumnConfigurer {
+		class PathTableFormat implements AdvancedTableFormat<Element>, TableColumnConfigurer {
 			@Override
 			public int getColumnCount() {
 				return 2;
@@ -96,7 +96,7 @@ public class SamplePart {
 			}
 
 			@Override
-			public Object getColumnValue(FileElement file, int col) {
+			public Object getColumnValue(Element file, int col) {
 				if (col == 0) {
 					return file.getFilename();
 				} else {
@@ -161,10 +161,10 @@ public class SamplePart {
 		Table table = new Table(parent, SWT.NONE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION | SWT.SINGLE);
 		table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		DefaultEventTableViewer<FileElement> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(sortedList, table, new PathTableFormat());
-		tableViewer.setTableItemConfigurer(new TableItemConfigurer<FileElement>() {
+		DefaultEventTableViewer<Element> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(sortedList, table, new PathTableFormat());
+		tableViewer.setTableItemConfigurer(new TableItemConfigurer<Element>() {
 			@Override
-			public void configure(TableItem tableItem, FileElement item, Object obj, int row, int column) {
+			public void configure(TableItem tableItem, Element item, Object obj, int row, int column) {
 				tableItem.setText(column, obj.toString());
 				// tableItem.setForeground(0,
 				// Display.getCurrent().getSystemColor(SWT.COLOR_RED));
@@ -177,7 +177,7 @@ public class SamplePart {
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 
-		TransformedList<FileElement, FileElement> transformedList = GlazedLists.threadSafeList(eventList);
+		TransformedList<Element, Element> transformedList = GlazedLists.threadSafeList(eventList);
 
 		Thread t = new Thread() {
 			public void run() {

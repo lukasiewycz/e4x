@@ -1,5 +1,7 @@
 package e4x.browser.model;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,9 +11,9 @@ import org.eclipse.swt.widgets.Display;
 
 import e4x.parts.FileHelper;
 
-public class PathElement implements FileElement {
+public class PathElement extends AbstractElement {
 	
-	protected Path path;
+	final protected Path path;
 	
 	public PathElement(Path path){
 		this.path = path;
@@ -29,6 +31,10 @@ public class PathElement implements FileElement {
 		}
 	}
 	
+	public Path getPath(){
+		return path;
+	}
+	
 	public String getFilename(){
 		return ""+path.getFileName();
 	}
@@ -37,9 +43,6 @@ public class PathElement implements FileElement {
 	public boolean isDirectory() {
 		return Files.isDirectory(path);
 	}
-	
-
-
 
 	@Override
 	public Image getIcon() {
@@ -47,5 +50,44 @@ public class PathElement implements FileElement {
 		return image;
 	}
 
+	@Override
+	public boolean isReadable() {
+		return Files.isReadable(path);
+	}
+
+	@Override
+	public boolean isHidden() {
+		try {
+			return Files.isHidden(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PathElement other = (PathElement) obj;
+		if (path == null) {
+			if (other.path != null)
+				return false;
+		} else if (!path.equals(other.path))
+			return false;
+		return true;
+	}
 	
 }

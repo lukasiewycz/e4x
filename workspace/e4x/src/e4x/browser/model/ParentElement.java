@@ -2,7 +2,7 @@ package e4x.browser.model;
 
 import org.eclipse.swt.graphics.Image;
 
-public class ParentElement implements FileElement {
+public class ParentElement extends AbstractElement {
 
 	@Override
 	public Long getFilesize() {
@@ -22,6 +22,16 @@ public class ParentElement implements FileElement {
 	@Override
 	public Image getIcon() {
 		return null;
+	}
+
+	@Override
+	public boolean isReadable() {
+		return true;
+	}
+
+	@Override
+	public boolean isHidden() {
+		return false;
 	}
 
 }
