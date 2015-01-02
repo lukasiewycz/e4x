@@ -45,8 +45,8 @@ import ca.odell.glazedlists.swt.GlazedListsSWT;
 import ca.odell.glazedlists.swt.TableColumnConfigurer;
 import ca.odell.glazedlists.swt.TableComparatorChooser;
 import ca.odell.glazedlists.swt.TableItemConfigurer;
-import e4x.browser.model.AdvancedFile;
-import e4x.browser.model.AdvancedPath;
+import e4x.browser.model.FileElement;
+import e4x.browser.model.PathElement;
 
 public class SamplePart {
 
@@ -69,12 +69,12 @@ public class SamplePart {
 			}
 		};
 
-		List<AdvancedFile> rootList = new ArrayList<AdvancedFile>();
+		List<FileElement> rootList = new ArrayList<FileElement>();
 
-		EventList<AdvancedFile> eventList = GlazedLists.eventList(rootList);
-		SortedList<AdvancedFile> sortedList = new SortedList<AdvancedFile>(eventList, null);
+		EventList<FileElement> eventList = GlazedLists.eventList(rootList);
+		SortedList<FileElement> sortedList = new SortedList<FileElement>(eventList, null);
 
-		class PathTableFormat implements AdvancedTableFormat<AdvancedFile>, TableColumnConfigurer {
+		class PathTableFormat implements AdvancedTableFormat<FileElement>, TableColumnConfigurer {
 			@Override
 			public int getColumnCount() {
 				return 2;
@@ -96,7 +96,7 @@ public class SamplePart {
 			}
 
 			@Override
-			public Object getColumnValue(AdvancedFile file, int col) {
+			public Object getColumnValue(FileElement file, int col) {
 				if (col == 0) {
 					return file.getFilename();
 				} else {
@@ -161,10 +161,10 @@ public class SamplePart {
 		Table table = new Table(parent, SWT.NONE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION | SWT.SINGLE);
 		table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		DefaultEventTableViewer<AdvancedFile> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(sortedList, table, new PathTableFormat());
-		tableViewer.setTableItemConfigurer(new TableItemConfigurer<AdvancedFile>() {
+		DefaultEventTableViewer<FileElement> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(sortedList, table, new PathTableFormat());
+		tableViewer.setTableItemConfigurer(new TableItemConfigurer<FileElement>() {
 			@Override
-			public void configure(TableItem tableItem, AdvancedFile item, Object obj, int row, int column) {
+			public void configure(TableItem tableItem, FileElement item, Object obj, int row, int column) {
 				tableItem.setText(column, obj.toString());
 				// tableItem.setForeground(0,
 				// Display.getCurrent().getSystemColor(SWT.COLOR_RED));
@@ -177,13 +177,13 @@ public class SamplePart {
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 
-		TransformedList<AdvancedFile, AdvancedFile> transformedList = GlazedLists.threadSafeList(eventList);
+		TransformedList<FileElement, FileElement> transformedList = GlazedLists.threadSafeList(eventList);
 
 		Thread t = new Thread() {
 			public void run() {
 				try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory, filter)) {
 					for (Path path : directoryStream) {
-						transformedList.add(new AdvancedPath(path));
+						transformedList.add(new PathElement(path));
 						Thread.sleep(100);
 					}
 				} catch (IOException ex) {

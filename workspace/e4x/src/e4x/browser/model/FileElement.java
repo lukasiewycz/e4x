@@ -2,7 +2,7 @@ package e4x.browser.model;
 
 import org.eclipse.swt.graphics.Image;
 
-public interface AdvancedFile {
+public interface FileElement {
 
 	public Long getFilesize();
 	

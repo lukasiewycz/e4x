@@ -3,11 +3,11 @@ package e4x.browser.columns;
 import java.util.Comparator;
 
 import e4x.browser.cells.CellData;
-import e4x.browser.model.AdvancedFile;
+import e4x.browser.model.FileElement;
 
 public interface BrowserColumn<T> {
 
-	public CellData<T> getCell(AdvancedFile file);
+	public CellData<T> getCell(FileElement file);
 	
 	public Comparator<CellData<T>> getComparator();
 	

@@ -2,7 +2,7 @@ package e4x.browser.cells;
 
 import org.eclipse.swt.graphics.Image;
 
-import e4x.browser.model.AdvancedFile;
+import e4x.browser.model.FileElement;
 
 public interface CellData<T> {
 
@@ -12,6 +12,6 @@ public interface CellData<T> {
 	
 	public String getText();
 	
-	public AdvancedFile getFile();
+	public FileElement getFile();
 	
 }

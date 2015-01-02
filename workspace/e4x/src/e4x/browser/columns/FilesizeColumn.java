@@ -3,12 +3,12 @@ package e4x.browser.columns;
 import org.eclipse.swt.graphics.Image;
 
 import e4x.browser.cells.CellData;
-import e4x.browser.model.AdvancedFile;
+import e4x.browser.model.FileElement;
 
 public class FilesizeColumn extends AbstractBrowserColumn<Long> {
 
 	@Override
-	public CellData<Long> getCell(AdvancedFile file) {
+	public CellData<Long> getCell(FileElement file) {
 		return new CellData<Long>() {
 			@Override
 			public Long getContent() {
@@ -26,7 +26,7 @@ public class FilesizeColumn extends AbstractBrowserColumn<Long> {
 			}
 
 			@Override
-			public AdvancedFile getFile() {
+			public FileElement getFile() {
 				return file;
 			}
 		};

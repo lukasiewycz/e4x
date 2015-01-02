@@ -9,11 +9,11 @@ import org.eclipse.swt.widgets.Display;
 
 import e4x.parts.FileHelper;
 
-public class AdvancedPath implements AdvancedFile {
+public class PathElement implements FileElement {
 	
 	protected Path path;
 	
-	public AdvancedPath(Path path){
+	public PathElement(Path path){
 		this.path = path;
 	}
 

@@ -53,9 +53,9 @@ import e4x.browser.columns.BrowserColumn;
 import e4x.browser.columns.ColumnTableFormat;
 import e4x.browser.columns.ExtensionColumn;
 import e4x.browser.columns.FilesizeColumn;
-import e4x.browser.model.AdvancedFile;
-import e4x.browser.model.AdvancedPath;
-import e4x.browser.model.ParentPath;
+import e4x.browser.model.FileElement;
+import e4x.browser.model.PathElement;
+import e4x.browser.model.ParentElement;
 
 public class BrowserPart {
 
@@ -84,32 +84,32 @@ public class BrowserPart {
 		columnList.add(new ExtensionColumn());
 		columnList.add(new FilesizeColumn());
 
-		List<AdvancedFile> rootList = new ArrayList<AdvancedFile>();
-		EventList<AdvancedFile> eventList = GlazedLists.eventList(rootList);
-		SortedList<AdvancedFile> sortedList = new SortedList<AdvancedFile>(eventList, GlazedLists.chainComparators(new AdvancedFileTypeComparator()));
+		List<FileElement> rootList = new ArrayList<FileElement>();
+		EventList<FileElement> eventList = GlazedLists.eventList(rootList);
+		SortedList<FileElement> sortedList = new SortedList<FileElement>(eventList, GlazedLists.chainComparators(new AdvancedFileTypeComparator()));
 
 		Table table = new Table(parent, SWT.NONE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL | SWT.FULL_SELECTION | SWT.SINGLE);
 		table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		SortedList<AdvancedFile> groupingList = new SortedList<AdvancedFile>(sortedList, new AdvancedFileTypeComparator());
+		SortedList<FileElement> groupingList = new SortedList<FileElement>(sortedList, new AdvancedFileTypeComparator());
 
-		DefaultEventTableViewer<AdvancedFile> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(groupingList, table, new ColumnTableFormat(
+		DefaultEventTableViewer<FileElement> tableViewer = GlazedListsSWT.eventTableViewerWithThreadProxyList(groupingList, table, new ColumnTableFormat(
 				columnList));
 		tableViewer.setTableItemConfigurer(new CustomTableItemConfigurer());
 
-		TableComparatorChooser<AdvancedFile> tcc = TableComparatorChooser.install(tableViewer, sortedList, false);
+		TableComparatorChooser<FileElement> tcc = TableComparatorChooser.install(tableViewer, sortedList, false);
 
 		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
+		//table.setLinesVisible(true);
 
-		TransformedList<AdvancedFile, AdvancedFile> transformedList = GlazedLists.threadSafeList(eventList);
+		TransformedList<FileElement, FileElement> transformedList = GlazedLists.threadSafeList(eventList);
 
 		Thread t = new Thread() {
 			public void run() {
-				transformedList.add(new ParentPath());
+				transformedList.add(new ParentElement());
 				try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory, filter)) {
 					for (Path path : directoryStream) {
-						transformedList.add(new AdvancedPath(path));
+						transformedList.add(new PathElement(path));
 						Thread.sleep(100);
 					}
 				} catch (IOException ex) {

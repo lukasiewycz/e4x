@@ -2,7 +2,7 @@ package e4x.browser.model;
 
 import org.eclipse.swt.graphics.Image;
 
-public class ParentPath implements AdvancedFile {
+public class ParentElement implements FileElement {
 
 	@Override
 	public Long getFilesize() {
