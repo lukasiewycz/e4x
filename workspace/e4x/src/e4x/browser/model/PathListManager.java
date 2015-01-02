@@ -52,84 +52,72 @@ public class PathListManager implements ListManager<PathElement> {
 
 		if (!isConnected && thread == null) {
 			final Path dir = element.getPath();
+			final Map<Path, PathElement> map = new HashMap<Path, PathElement>();
 
 			isConnected = true;
 
-			try {
-				final WatchService watcher = dir.getFileSystem().newWatchService();
-				dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+			thread = new Thread() {
+				public void run() {
+					list.clear();
+					list.add(new ParentElement());
 
-				Map<Path, PathElement> map = new HashMap<Path, PathElement>();
-
-				thread = new Thread() {
-					public void run() {
-						list.clear();
-						list.add(new ParentElement());
-
-						try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir)) {
-							for (Path path : directoryStream) {
-								list.getReadWriteLock().writeLock().lock();
-								list.add(create(path, map));
-								list.getReadWriteLock().writeLock().unlock();
-								Thread.sleep(100);
-								if (!isConnected) {
-									break;
-								}
+					try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir)) {
+						for (Path path : directoryStream) {
+							list.getReadWriteLock().writeLock().lock();
+							list.add(create(path, map));
+							list.getReadWriteLock().writeLock().unlock();
+							if (!isConnected) {
+								break;
 							}
-						} catch (IOException ex) {
-						} catch (InterruptedException e) {
 						}
-
-						try {
-							
-
-							while (isConnected) {
-								WatchKey key = watcher.take();
-								
-								for (WatchEvent<?> e : key.pollEvents()) {
-									Path path = dir.resolve((Path) e.context());
-
-									if (e.kind() == ENTRY_CREATE) {
-										if (!map.containsKey(path)) {
-											list.getReadWriteLock().writeLock().lock();
-											list.add(create(path, map));
-											list.getReadWriteLock().writeLock().unlock();
-										}
-									}
-									if (e.kind() == ENTRY_DELETE) {
-										if (map.containsKey(path)) {
-											list.getReadWriteLock().writeLock().lock();
-											list.remove(create(path, map));
-											list.getReadWriteLock().writeLock().unlock();
-											map.remove(path);
-										}
-									}
-									if (e.kind() == ENTRY_MODIFY) {
-										if (map.containsKey(path)) {
-											list.getReadWriteLock().writeLock().lock();
-											map.get(path).fireModify();
-											list.getReadWriteLock().writeLock().unlock();
-										}
-									}
-								}
-								
-								boolean valid = key.reset();
-							    if (!valid) {
-							        break;
-							    }
-							}
-
-						} catch (InterruptedException e1) {
-						}
-
+					} catch (IOException ex) {
 					}
-				};
-				thread.start();
 
-			} catch (IOException x) {
-				System.err.println(x);
-			}
+					try (WatchService watcher = dir.getFileSystem().newWatchService()) {
+						dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 
+						while (isConnected) {
+							WatchKey key = watcher.take();
+
+							for (WatchEvent<?> e : key.pollEvents()) {
+								Path path = dir.resolve((Path) e.context());
+
+								if (e.kind() == ENTRY_CREATE) {
+									if (!map.containsKey(path)) {
+										list.getReadWriteLock().writeLock().lock();
+										list.add(create(path, map));
+										list.getReadWriteLock().writeLock().unlock();
+									}
+								}
+								if (e.kind() == ENTRY_DELETE) {
+									if (map.containsKey(path)) {
+										list.getReadWriteLock().writeLock().lock();
+										list.remove(create(path, map));
+										list.getReadWriteLock().writeLock().unlock();
+										map.remove(path);
+									}
+								}
+								if (e.kind() == ENTRY_MODIFY) {
+									if (map.containsKey(path)) {
+										list.getReadWriteLock().writeLock().lock();
+										map.get(path).fireModify();
+										list.getReadWriteLock().writeLock().unlock();
+									}
+								}
+							}
+
+							boolean valid = key.reset();
+							if (!valid) {
+								break;
+							}
+						}
+
+					} catch (InterruptedException | IOException e1) {
+					}
+
+				}
+			};
+			thread.start();
 		}
 	}
 

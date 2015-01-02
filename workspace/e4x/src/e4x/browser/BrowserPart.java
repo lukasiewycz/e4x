@@ -92,7 +92,8 @@ public class BrowserPart {
 				columnList));
 		tableViewer.setTableItemConfigurer(new CustomTableItemConfigurer());
 
-		TableComparatorChooser<Element> tcc = TableComparatorChooser.install(tableViewer, sortedList, false);
+		//TableComparatorChooser<Element> tcc = 
+		TableComparatorChooser.install(tableViewer, sortedList, false);
 
 		table.setHeaderVisible(true);
 		//table.setLinesVisible(true);

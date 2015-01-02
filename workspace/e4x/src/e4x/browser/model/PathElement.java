@@ -1,7 +1,5 @@
 package e4x.browser.model;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
